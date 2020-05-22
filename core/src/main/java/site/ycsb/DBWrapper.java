@@ -97,9 +97,9 @@ public class DBWrapper extends DB {
         }
       }
 
-      System.err.println("DBWrapper: report latency for each error is " +
+      /*System.err.println("DBWrapper: report latency for each error is " +
           this.reportLatencyForEachError + " and specific error codes to track" +
-          " for latency are: " + this.latencyTrackedErrors.toString());
+          " for latency are: " + this.latencyTrackedErrors.toString());*/
     }
   }
 
