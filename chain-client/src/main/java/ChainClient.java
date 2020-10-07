@@ -182,6 +182,7 @@ public class ChainClient extends DB implements ChannelListener<ProtoMessage> {
     try {
       ResponseMessage resp = (ResponseMessage) msg;
       //System.err.println(msg);
+
       callbacks.get(resp.getOpId()).complete(resp);
     } catch (Exception e) {
       System.err.println(e.getMessage());
