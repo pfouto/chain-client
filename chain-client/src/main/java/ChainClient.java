@@ -79,7 +79,7 @@ public class ChainClient extends DB {
             for (int f = 0; f < nFrontends; f++) {
               InetAddress addr = InetAddress.getByName(s);
               int port = serverPort + f;
-              System.err.println("Connecting to " + addr + ":" + port);
+              //System.err.println("Connecting to " + addr + ":" + port);
               ChannelFuture connect = b.connect(addr, port);
               connectFutures.add(connect);
               servers.add(connect.channel());

@@ -249,7 +249,7 @@ for run in $(seq "$start_run" $((n_runs + start_run - 1))); do # ---------------
 											-Djava.net.preferIPv4Stack=true \
 											-DlogFilename=${exp_path_server}/${n_threads}_${server_node} \
 											-cp $jar_file $main_class algorithm=$alg initial_membership=$servers_without_port \
-											initial_state=ACTIVE batch_interval=10 \
+											initial_state=ACTIVE batch_interval=10 local_batch_interval=10 \
 											quorum_size=$quorum_size read_response_bytes=$payload zookeeper_url=$zoo_url \
 											batch_size=$batchsize local_batch_size=$batchsize n_frontends=$frontends \
 											max_concurrent_fails=$max_concurrent_fails" 2>&1 | sed "s/^/[s-$server_node] /" &
