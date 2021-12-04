@@ -121,7 +121,6 @@ LICENSE file.
     <module>binding-parent</module>
     <module>distribution</module>
     <!-- all the datastore bindings, lex sorted please -->
-    <module>cassandra</module>
   </modules>
 
   <build>

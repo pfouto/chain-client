@@ -1,13 +1,9 @@
-import channel.ChannelEvent;
-import channel.ChannelListener;
-import channel.simpleclientserver.SimpleClientChannel;
-import channel.simpleclientserver.events.ServerDownEvent;
-import channel.simpleclientserver.events.ServerFailedEvent;
-import channel.simpleclientserver.events.ServerUpEvent;
-import io.netty.channel.EventLoopGroup;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import network.*;
-import network.data.Host;
-import org.apache.commons.lang3.tuple.Pair;
 import site.ycsb.ByteIterator;
 import site.ycsb.DB;
 import site.ycsb.Status;
@@ -18,49 +14,37 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static network.RequestMessage.READ_STRONG;
-import static network.RequestMessage.READ_WEAK;
+public class ChainClient extends DB {
 
-public class ChainClient extends DB implements ChannelListener<ProtoMessage> {
-
-  private static AtomicInteger idCounter;
   private static final AtomicInteger initCounter = new AtomicInteger();
-
+  private static final ThreadLocal<Channel> threadServer = new ThreadLocal<>();
+  private static final Map<Channel, Map<Integer, CompletableFuture<ResponseMessage>>> opCallbacks = new HashMap<>();
+  private static AtomicInteger idCounter;
   private static int timeoutMillis;
-
   private static byte readType;
-
-  private static final Map<Host, CompletableFuture<Void>> connectFutures = new ConcurrentHashMap<>();
-
-  private static List<Pair<Host, SimpleClientChannel<ProtoMessage>>> servers;
+  private static List<Channel> servers;
   private static String[] hosts;
   private static String[] weights;
   private static double totalWeight;
-  private static final ThreadLocal<Pair<Host, SimpleClientChannel<ProtoMessage>>> threadServer = new ThreadLocal<>();
-  private static final Map<Integer, CompletableFuture<ResponseMessage>> callbacks = new ConcurrentHashMap<>();
 
   @Override
   public void init() {
     try {
       //System.err.println(i1 + " " + Thread.currentThread().toString());
-      synchronized (callbacks) {
+      synchronized (opCallbacks) {
         if (servers == null) {
           //ONCE
           timeoutMillis = Integer.parseInt(getProperties().getProperty("timeout_millis"));
-          int serverPort = Integer.parseInt(getProperties().getProperty("frontend_server_port"));
+          int serverPort = Integer.parseInt(getProperties().getProperty("app_server_port"));
           int nFrontends = Integer.parseInt(getProperties().getProperty("n_frontends"));
-          int myNumber = Integer.parseInt(getProperties().getProperty("node_number"));
           String readProp = getProperties().getProperty("read_type", "strong");
-          if (readProp.equals("weak")) readType = READ_WEAK;
-          else if (readProp.equals("strong")) readType = READ_STRONG;
-          idCounter = new AtomicInteger(myNumber * 10000000);
+          if (readProp.equals("weak")) readType = RequestMessage.WEAK_READ;
+          else if (readProp.equals("strong")) readType = RequestMessage.STRONG_READ;
+          idCounter = new AtomicInteger(0);
           //System.err.println("My id: " + myNumber + " field length: " + getProperties().getProperty("fieldlength") +
           //    " client id: " + idCounter.get());
 
           servers = new LinkedList<>();
-          BaseProtoMessageSerializer serializer = new BaseProtoMessageSerializer(new ConcurrentHashMap<>());
-          serializer.registerProtoSerializer(RequestMessage.MSG_CODE, RequestMessage.serializer);
-          serializer.registerProtoSerializer(ResponseMessage.MSG_CODE, ResponseMessage.serializer);
 
           String host = getProperties().getProperty("hosts");
           hosts = host.split(",");
@@ -69,7 +53,7 @@ public class ChainClient extends DB implements ChannelListener<ProtoMessage> {
           if (getProperties().containsKey("weights") && !getProperties().getProperty("weights").isEmpty()) {
             weights = getProperties().getProperty("weights").split(":");
 
-            if (weights.length != hosts.length*nFrontends) {
+            if (weights.length != hosts.length * nFrontends) {
               System.err.println("Weight does not match hosts");
               System.exit(-1);
             }
@@ -77,21 +61,35 @@ public class ChainClient extends DB implements ChannelListener<ProtoMessage> {
             for (String weight : weights) totalWeight += Double.parseDouble(weight);
           }
 
+          EventLoopGroup workerGroup = new NioEventLoopGroup();
+          Bootstrap b = new Bootstrap();
+          b.group(workerGroup);
+          b.channel(NioSocketChannel.class);
+          b.option(ChannelOption.SO_KEEPALIVE, true);
+          b.handler(new ChannelInitializer<SocketChannel>() {
+            @Override
+            public void initChannel(SocketChannel ch) {
+              //System.err.println("InitChannel: " + ch);
+              ch.pipeline().addLast(new RequestEncoder(), new ResponseDecoder(), new ClientHandler());
+            }
+          });
+
+          List<ChannelFuture> connectFutures = new LinkedList<>();
           for (String s : hosts) {
             for (int f = 0; f < nFrontends; f++) {
-              Host h = new Host(InetAddress.getByName(s), serverPort + f);
-              connectFutures.put(h, new CompletableFuture<>());
-              Properties p = new Properties();
-              p.setProperty(SimpleClientChannel.ADDRESS_KEY, h.getAddress().getHostAddress());
-              p.put(SimpleClientChannel.PORT_KEY, h.getPort());
-              p.put(SimpleClientChannel.WORKER_GROUP_KEY, NetworkManager.createNewWorkerGroup());
-              servers.add(Pair.of(h, new SimpleClientChannel<>(serializer, this, p)));
+              InetAddress addr = InetAddress.getByName(s);
+              int port = serverPort + f;
+              System.err.println("Connecting to " + addr + ":" + port);
+              ChannelFuture connect = b.connect(addr, port);
+              connectFutures.add(connect);
+              servers.add(connect.channel());
+              opCallbacks.put(connect.channel(), new ConcurrentHashMap<>());
             }
           }
-          for (CompletableFuture<Void> f : connectFutures.values()) {
-            f.get();
+          for (ChannelFuture f : connectFutures) {
+            f.sync();
           }
-          //System.err.println("Connected to all servers!");
+          System.err.println("Connected to all servers!");
           //END ONCE ----------
         }
         int randIdx = -1;
@@ -110,7 +108,7 @@ public class ChainClient extends DB implements ChannelListener<ProtoMessage> {
         }
         threadServer.set(servers.get(randIdx));
       }
-    } catch (UnknownHostException | InterruptedException | ExecutionException e) {
+    } catch (UnknownHostException | InterruptedException e) {
       e.printStackTrace();
       System.exit(1);
     }
@@ -121,7 +119,7 @@ public class ChainClient extends DB implements ChannelListener<ProtoMessage> {
     try {
       //System.err.println("Read: " + key);
       int id = idCounter.incrementAndGet();
-      RequestMessage requestMessage = new RequestMessage(id, readType, key.getBytes());
+      RequestMessage requestMessage = new RequestMessage(id, readType, key, new byte[0]);
       return executeOperation(requestMessage);
     } catch (Exception e) {
       e.printStackTrace();
@@ -133,11 +131,11 @@ public class ChainClient extends DB implements ChannelListener<ProtoMessage> {
   @Override
   public Status insert(String table, String key, Map<String, ByteIterator> values) {
     try {
-      byte[] value = values.entrySet().iterator().next().getValue().toArray();
-      //System.err.println("Insert: " + key + " : " + value);
+      //System.err.println("Insert: " + key + " : " + key);
+      byte[] value = values.values().iterator().next().toArray();
       int id = idCounter.incrementAndGet();
       //System.err.println(id);
-      RequestMessage requestMessage = new RequestMessage(id, RequestMessage.WRITE, value);
+      RequestMessage requestMessage = new RequestMessage(id, RequestMessage.WRITE, key, value);
       return executeOperation(requestMessage);
     } catch (Exception e) {
       e.printStackTrace();
@@ -147,16 +145,16 @@ public class ChainClient extends DB implements ChannelListener<ProtoMessage> {
   }
 
   private Status executeOperation(RequestMessage requestMessage) throws InterruptedException, ExecutionException {
-    //System.err.println(requestMessage);
+    //System.err.println("Sending " + requestMessage);
     CompletableFuture<ResponseMessage> future = new CompletableFuture<>();
-    callbacks.put(requestMessage.getOpId(), future);
-    Map.Entry<Host, SimpleClientChannel<ProtoMessage>> connection = threadServer.get();
-    connection.getValue().sendMessage(requestMessage, null, -1);
+    Channel channel = threadServer.get();
+    opCallbacks.get(channel).put(requestMessage.getcId(), future);
+    channel.writeAndFlush(requestMessage);
     try {
       future.get(timeoutMillis, TimeUnit.MILLISECONDS);
       return Status.OK;
     } catch (TimeoutException ex) {
-      System.err.println("Op Timed out..." + connection.getKey() + " " + requestMessage.getOpId());
+      System.err.println("Op Timed out..." + channel.remoteAddress() + " " + requestMessage.getcId());
       System.exit(1);
       return Status.SERVICE_UNAVAILABLE;
     }
@@ -177,38 +175,40 @@ public class ChainClient extends DB implements ChannelListener<ProtoMessage> {
     throw new AssertionError();
   }
 
-  @Override
-  public void deliverMessage(ProtoMessage msg, Host from) {
-    try {
-      ResponseMessage resp = (ResponseMessage) msg;
-      //System.err.println(msg);
+  static class ClientHandler extends ChannelInboundHandlerAdapter {
 
-      callbacks.get(resp.getOpId()).complete(resp);
-    } catch (Exception e) {
-      System.err.println(e.getMessage());
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
+      System.err.println("Unexpected event, exiting: " + evt);
+      System.exit(1);
+      ctx.fireUserEventTriggered(evt);
     }
-  }
 
-  @Override
-  public void messageSent(ProtoMessage msg, Host to) {
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) {
+      System.err.println("Server connection lost, exiting: " + ctx.channel().remoteAddress());
+      //System.exit(1);
+      ctx.fireChannelInactive();
+    }
 
-  }
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+      System.err.println("Exception caught, exiting: " + cause);
+      cause.printStackTrace();
+      System.exit(1);
+      ctx.fireExceptionCaught(cause);
+    }
 
-  @Override
-  public void messageFailed(ProtoMessage msg, Host to, Throwable cause) {
-    System.err.println("Message Failed: " + msg + " " + cause);
-  }
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) {
+      //System.err.println("Connected to " + ctx.channel());
+    }
 
-  @Override
-  public void deliverEvent(ChannelEvent evt) {
-    if (evt instanceof ServerUpEvent) {
-      connectFutures.get(((ServerUpEvent) evt).getServer()).complete(null);
-    } else if (evt instanceof ServerDownEvent) {
-      throw new AssertionError("Server connection lost: " + evt);
-    } else if (evt instanceof ServerFailedEvent) {
-      throw new AssertionError("Server connection failed: " + evt);
-    } else {
-      throw new AssertionError("Unexpected event: " + evt);
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+      //System.err.println("Message received: " + msg);
+      ResponseMessage resp = (ResponseMessage) msg;
+      opCallbacks.get(ctx.channel()).get(resp.getcId()).complete(resp);
     }
   }
 }

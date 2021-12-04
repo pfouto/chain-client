@@ -56,7 +56,7 @@ public class TerminatorThread extends Thread {
         try {
           t.join(waitTimeOutInMS);
           if (t.isAlive()) {
-            System.out.println("Still waiting for thread " + t.getName() + " to complete. " +
+            System.err.println("Still waiting for thread " + t.getName() + " to complete. " +
                 "Workload status: " + workload.isStopRequested());
           }
         } catch (InterruptedException e) {

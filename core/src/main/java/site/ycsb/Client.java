@@ -387,14 +387,16 @@ public final class Client {
       System.exit(0);
     }
 
-    try {
-      try (final TraceScope span = tracer.newScope(CLIENT_EXPORT_MEASUREMENTS_SPAN)) {
-        exportMeasurements(props, opsDone, en - st);
+    if (maxExecutionTime <= 0) {
+      try {
+        try (final TraceScope span = tracer.newScope(CLIENT_EXPORT_MEASUREMENTS_SPAN)) {
+          exportMeasurements(props, opsDone, en - st);
+        }
+      } catch (IOException e) {
+        System.err.println("Could not export measurements, error: " + e.getMessage());
+        e.printStackTrace();
+        System.exit(-1);
       }
-    } catch (IOException e) {
-      System.err.println("Could not export measurements, error: " + e.getMessage());
-      e.printStackTrace();
-      System.exit(-1);
     }
 
     System.exit(0);
