@@ -1,5 +1,8 @@
+deploy
+
 # ignore compiled byte code
 target
+
 
 # ignore output files from testing
 output*
