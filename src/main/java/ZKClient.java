@@ -32,7 +32,7 @@ public class ZKClient extends DB {
     //private static final String CONNECT_STRING = "zookeeper.connectString";
     private static final String DEFAULT_CONNECT_STRING = "127.0.0.1:2181";
     private static final String SESSION_TIMEOUT_PROPERTY = "zookeeper.sessionTimeout";
-    private static final long DEFAULT_SESSION_TIMEOUT = TimeUnit.SECONDS.toMillis(30L);
+    private static final long DEFAULT_SESSION_TIMEOUT = TimeUnit.SECONDS.toMillis(200L);
     private static final Charset UTF_8 = StandardCharsets.UTF_8;
     private static final Logger LOG = LoggerFactory.getLogger(ZKClient.class);
     private ZooKeeper zk;
@@ -96,6 +96,7 @@ public class ZKClient extends DB {
             return Status.OK;
         } catch (KeeperException | InterruptedException e) {
             LOG.error("Error when reading a path:{},tableName:{}", path, table, e);
+            System.exit(1);
             return Status.ERROR;
         }
     }
@@ -113,6 +114,7 @@ public class ZKClient extends DB {
             return Status.OK;
         } catch (KeeperException | InterruptedException e2) {
             LOG.error("Error when inserting a path:{},tableName:{}", path, table, e2);
+            System.exit(1);
             return Status.ERROR;
         }
     }
@@ -126,6 +128,7 @@ public class ZKClient extends DB {
             return Status.OK;
         } catch (InterruptedException | KeeperException e) {
             LOG.error("Error when deleting a path:{},tableName:{}", path, table, e);
+            System.exit(1);
             return Status.ERROR;
         }
     }
@@ -151,6 +154,7 @@ public class ZKClient extends DB {
             return Status.OK;
         } catch (KeeperException | InterruptedException e) {
             LOG.error("Error when updating a path:{},tableName:{}", path, table, e);
+            System.exit(1);
             return Status.ERROR;
         }
     }
