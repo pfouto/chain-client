@@ -3,14 +3,12 @@ import java.nio.charset.Charset;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooDefs;
-import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.*;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
@@ -29,14 +27,16 @@ import org.slf4j.LoggerFactory;
  */
 public class ZKClient extends DB {
 
-    //private static final String CONNECT_STRING = "zookeeper.connectString";
-    private static final String DEFAULT_CONNECT_STRING = "127.0.0.1:2181";
     private static final String SESSION_TIMEOUT_PROPERTY = "zookeeper.sessionTimeout";
+    private static final String SYNC_READ_PROPERTY = "zookeeper.syncRead";
     private static final long DEFAULT_SESSION_TIMEOUT = TimeUnit.SECONDS.toMillis(200L);
     private static final Charset UTF_8 = StandardCharsets.UTF_8;
     private static final Logger LOG = LoggerFactory.getLogger(ZKClient.class);
+    private boolean syncRead;
     private ZooKeeper zk;
     private Watcher watcher;
+
+    private boolean lastOpWrite = false;
 
     /**
      * converting the key:values map to JSON Strings.
@@ -49,9 +49,9 @@ public class ZKClient extends DB {
     public void init() throws DBException {
         Properties props = getProperties();
 
-       // String connectString = props.getProperty(CONNECT_STRING);
+        // String connectString = props.getProperty(CONNECT_STRING);
         //if (connectString == null || connectString.length() == 0) {
-         //   connectString = DEFAULT_CONNECT_STRING;
+        //   connectString = DEFAULT_CONNECT_STRING;
         //}
 
         watcher = null;
@@ -63,6 +63,8 @@ public class ZKClient extends DB {
         } else {
             sessionTimeout = DEFAULT_SESSION_TIMEOUT;
         }
+
+        syncRead = Boolean.parseBoolean(props.getProperty(SYNC_READ_PROPERTY));
 
         String host = getProperties().getProperty("hosts");
         String[] hosts = host.split(",");
@@ -86,7 +88,19 @@ public class ZKClient extends DB {
     public Status read(String table, String key, Set<String> fields,
                        Map<String, ByteIterator> result) {
         String path = getPath(key);
+
         try {
+            if (syncRead && !lastOpWrite) {
+                CompletableFuture<Integer> cf = new CompletableFuture<>();
+                zk.sync(path, (rc, path1, ctx) -> cf.complete(rc), null);
+                Integer syncRes = cf.get();
+                if(syncRes != KeeperException.Code.OK.intValue()){
+                    LOG.error("Error when syncing a path:{},tableName:{},result:{}", path, table, syncRes);
+                    System.exit(1);
+                    return Status.ERROR;
+                }
+            }
+
             byte[] data = zk.getData(path, watcher, null);
             if (data == null || data.length == 0) {
                 return Status.NOT_FOUND;
@@ -94,10 +108,12 @@ public class ZKClient extends DB {
 
             deserializeValues(data, fields, result);
             return Status.OK;
-        } catch (KeeperException | InterruptedException e) {
+        } catch (KeeperException | InterruptedException | ExecutionException e) {
             LOG.error("Error when reading a path:{},tableName:{}", path, table, e);
             System.exit(1);
             return Status.ERROR;
+        } finally {
+            lastOpWrite = false;
         }
     }
 
@@ -116,6 +132,8 @@ public class ZKClient extends DB {
             LOG.error("Error when inserting a path:{},tableName:{}", path, table, e2);
             System.exit(1);
             return Status.ERROR;
+        } finally {
+            lastOpWrite = true;
         }
     }
 
