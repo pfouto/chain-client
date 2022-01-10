@@ -1,4 +1,4 @@
-deploy
+deploy/client
 
 # ignore compiled byte code
 target

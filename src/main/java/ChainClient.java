@@ -96,7 +96,7 @@ public class ChainClient extends DB {
         }
         int randIdx = -1;
         if (totalWeight == 0) {
-          int threadId = initCounter.incrementAndGet();
+          int threadId = initCounter.getAndIncrement();
           randIdx = threadId % servers.size();
         } else {
           double random = Math.random() * totalWeight;
@@ -108,7 +108,9 @@ public class ChainClient extends DB {
             }
           }
         }
+
         threadServer.set(servers.get(randIdx));
+
       }
     } catch (UnknownHostException | InterruptedException e) {
       e.printStackTrace();
