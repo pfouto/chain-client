@@ -122,6 +122,12 @@ IFS=', ' read -r -a threads_list <<<"$n_threads_arg"
 
 total_runs=$((n_runs * ${#payloads_list[@]} * ${#n_servers_list[@]} * ${#algs_list[@]} * ${#reads_list[@]} * ${#threads_list[@]}))
 
+echo "Disabling C-States"
+mapfile -t workers < <(./nodes.sh)
+for worker in "${workers[@]}"; do
+  oarsh "$worker" "sudo-g5k apt-get install linux-cpupower && sudo-g5k cpupower idle-set -d 3"
+done
+
 # ----------------------------------- LOG PARAMS ------------------------------
 echo -e "$BLUE\n ---- CONFIG ----  $NC"
 echo -e "$GREEN exp_name: $NC \t\t\t${exp_name}"
@@ -136,6 +142,7 @@ echo -e "$GREEN n threads: $NC \t\t\t${threads_list[*]}"
 echo -e "$GREEN ---------- $NC"
 echo -e "$GREEN number of runs: $NC \t\t${total_runs}"
 echo -e "$BLUE ---- END CONFIG ---- \n $NC"
+
 
 current_run=0
 
