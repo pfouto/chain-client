@@ -172,6 +172,9 @@ for run in $(# ------------------------------------------- RUN
     done
     servers_without_port=${servers_without_port::-1}
 
+    lastserver=$snode
+    echo "Lastserver $lastserver"
+
     for reads_per in "${reads_list[@]}"; do # ---------------------------  READS_PER
       echo -e "$GREEN -- -- -- STARTING READS PERCENTAGE  $NC$reads_per"
 
@@ -212,13 +215,14 @@ for run in $(# ------------------------------------------- RUN
 											-DlogFilename=${exp_path_server}/${n_threads}_${server_node} \
 											-cp chain.jar:. app.HashMapApp algorithm=$alg initial_membership=$servers_without_port \
 											initial_state=ACTIVE batch_interval=100 local_batch_interval=100 \
+											leader_timeout=8000 \
 											quorum_size=$quorum_size read_response_bytes=$payload zookeeper_url=$zoo_url \
 											batch_size=10 local_batch_size=10 n_frontends=1 \
 											max_concurrent_fails=$max_concurrent_fails" 2>&1 | sed "s/^/[s-$server_node] /" &
-              sleep 0.5
+              sleep 1
               server_p_ids+=($!)
             done
-            sleep 8
+            sleep 10
             echo "Starting clients and waiting for them to finish"
             unset client_p_ids
             client_p_ids=()
@@ -226,7 +230,7 @@ for run in $(# ------------------------------------------- RUN
               oarsh "$node" "cd chainpaxos/client && java -cp chain-client.jar \
                       site.ycsb.Client -t -s -P config.properties \
 											-threads $n_threads -p fieldlength=$payload \
-											-p hosts=$servers_without_port -p n_frontends=1 \
+											-p hosts=$lastserver -p n_frontends=1 \
 											-p maxexecutiontime=125 \
 											-p readproportion=${reads_per} -p insertproportion=${writes_per} \
 											| tee ${exp_path_client}/${n_threads}_${node}.log" |& sed "s/^/[c-$node] /" &
@@ -258,3 +262,16 @@ for run in $(# ------------------------------------------- RUN
 done           #run
 echo -e "$BLUE -- -- -- -- -- -- -- -- All tests completed $NC"
 exit
+
+#1
+#./exec_geo_leader.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --algs multi,distinguished_piggy --n_threads 50,100,200,500,1000,1500,2000 && \
+#./exec_geo_leader.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 5 --reads_per 0 --algs multi,distinguished_piggy --n_threads 50,100,200,500,1000,1500,2000
+
+#2
+#./exec_geo_split.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --algs epaxos,esolatedpaxos --n_threads 50,100,200,500,1000,1500 && \
+#./exec_geo_split.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 5 --reads_per 0 --algs epaxos,esolatedpaxos --n_threads 50,100,200,500,1000,1500
+
+#3
+#./exec_geo_last.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --zoo_url gros-52 --algs chainrep,chain_mixed,uring --n_threads 50,100,200,500,1000,1500,2000,2500,3000
+#4
+#./exec_geo_last.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 5 --reads_per 0 --zoo_url gros-38 --algs chainrep,chain_mixed,uring --n_threads 50,100,200,500,1000,1500,2000,2500,3000

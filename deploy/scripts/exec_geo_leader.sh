@@ -226,8 +226,8 @@ for run in $(# ------------------------------------------- RUN
               oarsh "$node" "cd chainpaxos/client && java -cp chain-client.jar \
                       site.ycsb.Client -t -s -P config.properties \
 											-threads $n_threads -p fieldlength=$payload \
-											-p hosts=$servers_without_port -p n_frontends=1 \
 											-p maxexecutiontime=125 \
+											-p hosts=${server_nodes[0]} -p n_frontends=1 \
 											-p readproportion=${reads_per} -p insertproportion=${writes_per} \
 											| tee ${exp_path_client}/${n_threads}_${node}.log" |& sed "s/^/[c-$node] /" &
               #> ${exp_path_client}/${n_threads}_${node}.log" 2>&1 | sed "s/^/[c-$node] /" &
