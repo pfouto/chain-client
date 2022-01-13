@@ -11,6 +11,7 @@ NC='\033[0m' # No Color
 
 # ----------------------------------- PARSE PARAMS ----------------------------
 zoo_url="localhost"
+ring_insts=60
 start_run=1
 
 POSITIONAL=()
@@ -65,6 +66,11 @@ while [[ $# -gt 0 ]]; do
     ;;
   --zoo_url)
     zoo_url="$2"
+    shift # past argument
+    shift # past value
+    ;;
+  --ring_insts)
+    ring_insts="$2"
     shift # past argument
     shift # past value
     ;;
@@ -212,6 +218,7 @@ for run in $(# ------------------------------------------- RUN
 											initial_state=ACTIVE batch_interval=10 local_batch_interval=10 \
 											quorum_size=$quorum_size read_response_bytes=$payload zookeeper_url=$zoo_url \
 											batch_size=1 local_batch_size=1 n_frontends=1 \
+											ring_max_instances=$ring_insts \
 											max_concurrent_fails=$max_concurrent_fails" 2>&1 | sed "s/^/[s-$server_node] /" &
               sleep 0.5
               server_p_ids+=($!)
