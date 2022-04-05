@@ -121,7 +121,6 @@ public class ChainClient extends DB {
   @Override
   public Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
     try {
-      //System.err.println("Read: " + key);
       int id = idCounter.incrementAndGet();
       RequestMessage requestMessage = new RequestMessage(id, readType, key, new byte[0]);
       return executeOperation(requestMessage);
@@ -133,12 +132,15 @@ public class ChainClient extends DB {
   }
 
   @Override
+  public Status update(String table, String key, Map<String, ByteIterator> values) {
+    return insert(table, key, values);
+  }
+
+  @Override
   public Status insert(String table, String key, Map<String, ByteIterator> values) {
     try {
-      //System.err.println("Insert: " + key + " : " + key);
       byte[] value = values.values().iterator().next().toArray();
       int id = idCounter.incrementAndGet();
-      //System.err.println(id);
       RequestMessage requestMessage = new RequestMessage(id, RequestMessage.WRITE, key, value);
       return executeOperation(requestMessage);
     } catch (Exception e) {
@@ -149,7 +151,6 @@ public class ChainClient extends DB {
   }
 
   private Status executeOperation(RequestMessage requestMessage) throws InterruptedException, ExecutionException {
-    //System.err.println("Sending " + requestMessage);
     CompletableFuture<ResponseMessage> future = new CompletableFuture<>();
     Channel channel = threadServer.get();
     opCallbacks.get(channel).put(requestMessage.getcId(), future);
@@ -166,11 +167,6 @@ public class ChainClient extends DB {
 
   @Override
   public Status scan(String t, String sK, int rC, Set<String> f, Vector<HashMap<String, ByteIterator>> res) {
-    throw new AssertionError();
-  }
-
-  @Override
-  public Status update(String table, String key, Map<String, ByteIterator> values) {
     throw new AssertionError();
   }
 
