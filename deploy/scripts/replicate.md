@@ -17,8 +17,10 @@ that were run for each set of figures. However, since we assume that the reviewe
 instruction and scripts on how to run the experiments in a generic cluster.
 
 ---
+
 **Note**: We assume that the evaluator does not have access to the Grid5000 testbed. If he does, then please contact us, and we will
 provide instructions on how to reproduce our results there (which is easier than the instructions that follow).
+
 ---
 
 ### Requirements for reproducing results
