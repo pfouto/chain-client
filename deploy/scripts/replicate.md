@@ -197,3 +197,17 @@ The behaviour and parameters of these scripts is similar to the cpu benchmark, w
     $HOME/chainpaxos/logs/read_strong/<exp_name>/<server/client>/<n_servers>/<reads_per>/<payload>/<alg>/<run>
 
 #### Latency under low load (Fig. 7)
+
+Again, just like the previous ones, run the following commands (making sure ZooKeeper is running for Chain Replication):
+
+    ./exec_lat_split.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,5,7 --reads_per 0 --algs epaxos,esolatedpaxos --n_threads 14
+    ./exec_lat_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,5,7 --reads_per 0 --algs distinguished,multi --n_threads 14
+    ./exec_lat_tail.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,5,7 --reads_per 0 --zoo_url <zoo_url> --algs uring,chainrep --n_threads 14
+    ./exec_lat_middle.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,5,7 --reads_per 0 --algs chain_mixed --n_threads 14
+    ./exec_lat_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3 --ring_insts 120 --reads_per 0 --algs ring --n_threads 14
+    ./exec_lat_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 5 --ring_insts 200 --reads_per 0 --algs ring --n_threads 14
+    ./exec_lat_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 7 --ring_insts 250 --reads_per 0 --algs ring --n_threads 14
+
+With results being saved to:
+
+    $HOME/chainpaxos/logs/latency/<exp_name>/<server/client>/<n_servers>/<reads_per>/<payload>/<alg>/<run>
