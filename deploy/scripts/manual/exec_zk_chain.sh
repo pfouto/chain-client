@@ -156,12 +156,13 @@ for run in $(# ------------------------------------------- RUN
 
       echo -e "$BLUE Creating experience config file $NC"
 
-      cp ../apache-zookeeper-3.7.0-bin/conf/config.properties ../apache-zookeeper-3.7.0-bin/conf/babel.conf
 
       for server_node in "${server_nodes[@]}"; do
-        ssh "$server_node" "echo initial_membership=${servers_without_port} >>../apache-zookeeper-3.7.0-bin/conf/babel.conf"
-        ssh "$server_node" "echo "quorum_size=${quorum_size}" >>../apache-zookeeper-3.7.0-bin/conf/babel.conf"
-        ssh "$server_node" "echo strongRead=false >>../apache-zookeeper-3.7.0-bin/conf/babel.conf"
+        ssh "$server_node" "cp $HOME/chainpaxos/apache-zookeeper-3.7.0-bin/conf/config.properties $HOME/chainpaxos/apache-zookeeper-3.7.0-bin/conf/babel.conf"
+
+        ssh "$server_node" "echo initial_membership=${servers_without_port} >> $HOME/chainpaxos/apache-zookeeper-3.7.0-bin/conf/babel.conf"
+        ssh "$server_node" "echo "quorum_size=${quorum_size}" >> $HOME/chainpaxos/apache-zookeeper-3.7.0-bin/conf/babel.conf"
+        ssh "$server_node" "echo strongRead=false >> $HOME/chainpaxos/apache-zookeeper-3.7.0-bin/conf/babel.conf"
       done
 
       for snode in "${server_nodes[@]}"; do
