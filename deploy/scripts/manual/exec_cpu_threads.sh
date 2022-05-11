@@ -181,8 +181,8 @@ for run in $(# ------------------------------------------- RUN
         for alg in "${algs_list[@]}"; do # ----------------------------------- ALG
           echo -e "$GREEN -- -- -- -- -- -- STARTING ALG $NC$alg"
 
-          exp_path_client="../logs/cpu_threads/${exp_name}/client/${n_servers}/${reads_per}/${payload}/${alg}/${run}"
-          exp_path_server="../logs/cpu_threads/${exp_name}/server/${n_servers}/${reads_per}/${payload}/${alg}/${run}"
+          exp_path_client="$HOME/chainpaxos/logs/cpu_threads/${exp_name}/client/${n_servers}/${reads_per}/${payload}/${alg}/${run}"
+          exp_path_server="$HOME/chainpaxos/logs/cpu_threads/${exp_name}/server/${n_servers}/${reads_per}/${payload}/${alg}/${run}"
 
           for server_node in "${server_nodes[@]}"; do
               ssh "$server_node" "mkdir -p ${exp_path_server}"
