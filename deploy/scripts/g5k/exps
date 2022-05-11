@@ -13,6 +13,12 @@ Assuming file system:
 
 Run commands from "scripts"
 
+CPU bottle:
+    ../zkOriginal/bin/zkServer.sh start zoo_sample.cfg //For chainrep
+    ./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,7 --reads_per 0 --algs chainrep,chain_mixed,uring,distinguished_piggy,multi,epaxos,esolatedpaxos --zoo_url gros-xxx --n_threads 1,2,5,10,20,50,100,200,300,400,500
+    ./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3 --reads_per 0 --algs ringpiggy  --ring_insts 120 --n_threads 1,2,5,10,20,50,100,200,300,400 && \
+    ./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 7 --reads_per 0 --algs ringpiggy  --ring_insts 250 --n_threads 1,2,5,10,20,50,100,200,300,400
+
 ZK:
      #Strong reads
      ./exec_zk_orig_strong.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,5,7 --reads_per 50,95 --n_threads 1,2,5,10,20,30,50,75,100,150,200,250,300,350
@@ -23,12 +29,6 @@ ZK:
      #Writes
      ./exec_zk_chain.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,5,7 --reads_per 0 --n_threads 1,2,5,10,20,30,50,75,100,150,200,250,300,350,500
      ./exec_zk_orig.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,5,7 --reads_per 0 --n_threads 1,2,5,10,20,30,50,75,100,150,200,250,300,350,500
-
-CPU bottle:
-    ../zkOriginal/bin/zkServer.sh start zoo_sample.cfg //For chainrep
-    ./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,7 --reads_per 0 --algs chainrep,chain_mixed,uring,distinguished_piggy,multi,epaxos,esolatedpaxos --zoo_url gros-xxx --n_threads 1,2,5,10,20,50,100,200,300,400,500
-    ./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3 --reads_per 0 --algs ringpiggy  --ring_insts 120 --n_threads 1,2,5,10,20,50,100,200,300,400 && \
-    ./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 7 --reads_per 0 --algs ringpiggy  --ring_insts 250 --n_threads 1,2,5,10,20,50,100,200,300,400
 
 Net bottle:
     ../zkOriginal/bin/zkServer.sh start zoo_sample.cfg //For chainrep
