@@ -35,6 +35,8 @@ The requirements for those machines are as follows:
 
 ### Setup for reproducing results
 
+#### Worker machines
+
 First we need to move all the artifacts to the machines that will run the experiments.
 There are 4 artifacts to setup: 
 * the ChainPaxos implementation (which includes other consensus protocols);
@@ -83,10 +85,57 @@ The steps to setup this file structure are as follows:
 * Download the already compiled ChainPaxos version of ZooKeeper from https://github.com/pfouto/chain-zoo/raw/master/zookeeper-assembly/target/apache-zookeeper-3.7.0-bin.tar.gz and then extract the archive to the folder `/home/<your user>/chainpaxos/apache-zookeeper-3.7.0-bin` in each machine.
 * Create the folder `/home/<your user>/chainpaxos/logs` in each machine.
 
-Finally, copy the `deploy/scripts/manual` folder from the `chain-client` repository to the machine that will coordinate the experiments and gather the results.
+#### Coordinator machine
+
+Copy the `deploy/scripts/manual` folder from the `chain-client` repository to the machine that will coordinate the experiments and gather the results.
 This can be any machine (one of the cluster machines or your personal workstation), as long as it has ssh access to the cluster machines.
 
-TODO: Set hosts file with machine names
+In this folder there will be a `hosts` file. Add each of the worker machines IP address (or names) to this file, with one entry per line. 
+The file comes with an example configuration, delete it and add your own IPs.
+Additionally, set the contents of the file `xmx` to be the memory available for the Java process. In our experiments we set this value
+to around 80% of the total available memory of the machine.
 
 ### Running experiments
+
+#### Relevant details
+
+Before providing the instruction to replicate the experiments, there are some important aspects that should be clarified:
+* **Client configuration**: The way we conducted the performance experiments consisted in increasing the number of client threads until the throughput of the evaluated system reached its maximum value.
+This means that we have an initial trial-and-error phase to find the number of clients required to saturate each system in each experiment.
+As such, to reproduce our experiments in different hardware, the number of clients will be different from the one used in the examples in the following section.
+Additionally, the number of clients that a single physical machine can handle is limited. We found that distributing the clients across 3 machines was a good balance for our setup.
+* **Ring Paxos maximum concurrent instances**: Since Ring Paxos uses IP-multicast, in order to avoid saturating the network, resulting in a high percentage of packets being dropped,
+we had to limit the number of maximum concurrent consensus instances. Again, this number will depend on the machines being used and their network configuration. The values used in our commands are the ones that presented better results in our testbed.
+* **Chain Replication membership**: Our implementation of Chain Replication uses ZooKeeper as its membership management "oracle".
+As such, during experiments that include Chain Replication, we run a (non-replicated) instance of ZooKeeper in one of the nodes (in our experiments we ran it on the coordinator).
+All other protocols were implemented with static memberships (except ChainPaxos, of course), and thus do not require ZooKeeper. 
+Note that this usage of ZooKeeper is completely unrelated to the experiments done in the ZooKeeper case-study in section 5.4 (figure 8).
+* **C-States**: In our experiments we disable C-States. All the scripts provided attempt to install `linux-cpupower` and disable C-States by running the following command: `sudo apt-get install linux-cpupower && sudo cpupower idle-set -d 3`.
+This is required to have more precise results, mainly in the latency experiments with low load (such as the one in figure 7).
+
+#### CPU bottleneck
+
+To reproduce the results in Figure 4, first we launch a Zookeeper instance, required for Chain Replication:
+    
+    `zkOriginal/bin/zkServer.sh start zoo_sample.cfg`
+This can be launched either on the coordinator, or any of the worker replicas (preferably on the ones that will run the clients)
+
+Then we executed the following scripts, sequentially:
+
+    ./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 5 --payloads 128 --n_servers 3,7 --reads_per 0 --algs chainrep,chain_mixed,uring,distinguished_piggy,multi,epaxos,esolatedpaxos --zoo_url <zoo_url> --n_threads 1,2,5,10,20,50,100,200,300,400,500
+    ./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 5 --payloads 128 --n_servers 3 --reads_per 0 --algs ringpiggy  --ring_insts 120 --n_threads 1,2,5,10,20,50,100,200,300,400
+    ./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 5 --payloads 128 --n_servers 7 --reads_per 0 --algs ringpiggy  --ring_insts 250 --n_threads 1,2,5,10,20,50,100,200,300,400
+
+The parameters passed to the script are as follows:
+* **exp_name** the name of the experiments, which defines the folder to where logs will be saved.
+* **n_clients** the number of client machines to be used
+* **n_runs** the number of repetition for each experiment. We used 5 for our results, but 3 (or maybe even less) should provide similar results.
+* **payloads** the size of the payload of operations 
+* **n_servers** the number of replicas to run
+* **read_per** percentage of read operations
+* **algs** the protocols to evaluate
+* **zoo_url** the IP address of the machine running ZooKeeper (required for Chain Replication)
+* **ring_insts** the maximum number of concurrent consensus instances in Ring Paxos
+* **n_threads** the number of client threads (i.e. the number of clients being emulated) in *each* client machine
+
 

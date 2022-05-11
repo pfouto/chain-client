@@ -1,20 +1,13 @@
 #!/usr/bin/env bash
 
-# ----------------------------------- CONSTANTS -------------------------------
-xmx="80G"
-echo $xmx
-xmx=$(cat xmx)
-echo $xmx
-
-exit
-xms="80G"
-
+# ----------------------------------- COLORS -------------------------------
 RED='\033[0;31m'
 BLUE='\033[0;34m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
-
 # ----------------------------------- PARSE PARAMS ----------------------------
+xmx=$(cat xmx)
+xms=$(cat xmx)
 zoo_url="localhost"
 ring_insts=60
 start_run=1
@@ -121,6 +114,10 @@ if [[ -z "${n_threads_arg}" ]]; then
 fi
 
 all_nodes=$(./nodes.sh)
+echo $all_nodes
+
+exit
+
 start_date=$(date +"%H:%M:%S")
 n_nodes=$(wc -l <<<"$all_nodes")
 
@@ -136,7 +133,7 @@ total_runs=$((n_runs * ${#payloads_list[@]} * ${#n_servers_list[@]} * ${#algs_li
 echo "Disabling C-States"
 mapfile -t workers < <(./nodes.sh)
 for worker in "${workers[@]}"; do
-  oarsh "$worker" "sudo-g5k apt-get install linux-cpupower && sudo-g5k cpupower idle-set -d 3"
+  shh "$worker" "sudo apt-get install linux-cpupower && sudo cpupower idle-set -d 3"
 done
 
 # ----------------------------------- LOG PARAMS ------------------------------
