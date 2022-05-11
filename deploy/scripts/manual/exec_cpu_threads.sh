@@ -196,12 +196,17 @@ for run in $(# ------------------------------------------- RUN
             echo -e "$GREEN -- -- -- -- -- -- -- -- STARTING THREADS $NC$n_threads"
             echo -e "$GREEN -- -- -- -- -- -- -- -- - $NC$exp_path_client/$n_threads"
 
-            rm -r "${exp_path_client}"/"${n_threads}"_*
-            rm -r "${exp_path_server}"/"${n_threads}"_*
+            for server_node in "${server_nodes[@]}"; do
+                ssh "$server_node" "rm -r ${exp_path_server}/${n_threads}_*"
+            done
+
+            for node in "${client_nodes[@]}"; do
+                ssh "$node" "rm -r ${exp_path_client}/${n_threads}_*"
+            done
 
             ((current_run = current_run + 1))
             echo -e "$GREEN RUN ${current_run}/${total_runs} - ($(((current_run - 1) * 100 / total_runs))%) ($start_date) $NC"
-            sleep 2
+            sleep 5
 
             echo -e "$BLUE Starting servers and sleeping 8 $NC"
             #echo "USING ASSERTIONS!!!!!!!!!"

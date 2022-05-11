@@ -124,7 +124,7 @@ To reproduce the results in Figure 4, first we launch a Zookeeper instance, requ
     `zkOriginal/bin/zkServer.sh start zoo_sample.cfg`
 This can be launched either on the coordinator, or any of the worker replicas (preferably on the ones that will run the clients)
 
-Then we executed the following scripts, sequentially:
+Then we executed the following script, sequentially:
 
     ./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 5 --payloads 128 --n_servers 3,7 --reads_per 0 --algs chainrep,chain_mixed,uring,distinguished_piggy,multi,epaxos,esolatedpaxos --zoo_url <zoo_url> --n_threads 1,2,5,10,20,50,100,200,300,400,500
     ./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 5 --payloads 128 --n_servers 3 --reads_per 0 --algs ringpiggy  --ring_insts 120 --n_threads 1,2,5,10,20,50,100,200,300,400
@@ -141,5 +141,38 @@ The parameters passed to the script are as follows:
 * **zoo_url** the IP address of the machine running ZooKeeper (required for Chain Replication)
 * **ring_insts** the maximum number of concurrent consensus instances in Ring Paxos
 * **n_threads** the number of client threads (i.e. the number of clients being emulated) in *each* client machine
+
+The script starts by outputting the received configuration:
+
+        ---- CONFIG ----  
+        exp_name:  			test
+        clients (3):  		gros-85.nancy.grid5000.fr gros-77.nancy.grid5000.fr gros-80.nancy.grid5000.fr
+        n_runs: 			5
+        start_run:  		1
+        n_servers:  		3 7
+        reads_percent:  	        0
+        payloads:  			128
+        algorithms:   		chainrep chain_mixed uring distinguished_piggy multi epaxos esolatedpaxos
+        n threads:  		1 2 5 10 20 50 100 200 300 400 500
+         ---------- 
+        number of runs:  	        770
+        ---- END CONFIG ----
+
+
+And then executes an experiment *for every combination of parameters*, in this case 770 experiments 
+
+`(7 different algorithms * 2 numbers of servers * 11 numbers of threads * 5 runs = 770)`
+
+The evaluator will probably want to use a lower number of `n_runs`.
+
+The experiment consists in:
+* Launching <n_servers> replicas of the given protocol.
+* Launching <n_client> clients with <n_threads> client threads each. Clients execute operations in closed loop for 85 seconds
+* Waiting for the clients to terminate
+* Terminate the replicas
+* Repeat for the next combination of parameters
+
+The machines to be used as replicas are picked starting from the first as defined in the `hosts` file, while the machines
+for clients are picked starting from the bottom.
 
 
