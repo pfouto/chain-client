@@ -85,6 +85,12 @@ The steps to setup this file structure are as follows:
 * Download the already compiled ChainPaxos version of ZooKeeper from https://github.com/pfouto/chain-zoo/raw/master/zookeeper-assembly/target/apache-zookeeper-3.7.0-bin.tar.gz and then extract the archive to the folder `/home/<your user>/chainpaxos/apache-zookeeper-3.7.0-bin` in each machine.
 * Create the folder `/home/<your user>/chainpaxos/logs` in each machine.
 
+Finally, we disable C-States in each worker machine:
+
+    sudo apt-get install linux-cpupower && sudo cpupower idle-set -d 3
+
+This is required to have more precise results, mainly in the latency experiments with low load (such as the one in figure 7).
+
 #### Coordinator machine
 
 Copy the `deploy/scripts/manual` folder from the `chain-client` repository to the machine that will coordinate the experiments and gather the results.
@@ -110,8 +116,6 @@ we had to limit the number of maximum concurrent consensus instances. Again, thi
 As such, during experiments that include Chain Replication, we run a (non-replicated) instance of ZooKeeper in one of the nodes (in our experiments we ran it on the coordinator).
 All other protocols were implemented with static memberships (except ChainPaxos, of course), and thus do not require ZooKeeper. 
 Note that this usage of ZooKeeper is completely unrelated to the experiments done in the ZooKeeper case-study in section 5.4 (figure 8).
-* **C-States**: In our experiments we disable C-States. All the scripts provided attempt to install `linux-cpupower` and disable C-States by running the following command: `sudo apt-get install linux-cpupower && sudo cpupower idle-set -d 3`.
-This is required to have more precise results, mainly in the latency experiments with low load (such as the one in figure 7).
 
 #### CPU bottleneck
 
