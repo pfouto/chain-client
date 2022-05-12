@@ -385,8 +385,23 @@ The structure of the results folder will be the following:
 Where each client log file contains, in intervals of 10 seconds, the number of operations executed, the current throughput,
 and the latency of executed operations. 
 
-To parse these results, for each point of each graph we:
+To parse these results, for each point of each graph, the graph generation scripts do the following:
 
 1. Average the latency and sum the throughput of all clients for each time interval for each run
 2. Average the throughput and latency of all time intervals for each run
 3. Average the throughput and latency of each run, resulting in the point to draw in the graph.
+
+If you wish to generate graphs for your results all you need to do is mimic the file structure in the results repository (i.e. having the python scripts and a folder `logs` with your results in the same folder)
+and then execute the python scripts. They should find your results and parse them.
+
+Each python script has, in the beginning, a number of parameters that you can alter to match your experiments, for instance:
+    
+    n_threads = [100, 200, 500, 1000, 1500, 2000, 2500, 3000, 4000, 5000]
+    n_clients = 10
+    payload = 2048
+    reads = 0
+    n_servers = [3, 5]
+    n_runs = 3
+
+If you only ran a single run of each experiment, change `n_runs` to 1. 
+If you only ran a subset of the number of client threads, remove some entries from the `n_threads` list, etc.
