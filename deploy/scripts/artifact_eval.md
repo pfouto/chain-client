@@ -1,5 +1,10 @@
 ## Reproducing experiments
 
+This document describes how to reproduce the experiments on the article.
+If the evaluator wishes to perform a simpler initial test, the README in the main repository (https://github.com/pfouto/chain) 
+has instructions on how to run our artifact in a very simple setting (either in a single machine with docker, or 3 different machines).
+
+
 ### Paper setup
 
 The experiments in the paper were conducted in the [Grid5000 testbed](https://www.grid5000.fr/w/Grid5000:Home), using
@@ -140,11 +145,16 @@ This can be launched either on the coordinator, or any of the worker replicas (p
 
 Then we executed the following scripts (that we got from the `deploy/scripts/manual` folder), sequentially:
 
-`./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,7 --reads_per 0 --algs chainrep,chain_mixed,uring,distinguished_piggy,multi,epaxos,esolatedpaxos --zoo_url <zoo_url> --n_threads 1,2,5,10,20,50,100,200,300,400,500`
-
-`./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3 --reads_per 0 --algs ringpiggy  --ring_insts 120 --n_threads 1,2,5,10,20,50,100,200,300,400`
-
-`./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 7 --reads_per 0 --algs ringpiggy  --ring_insts 250 --n_threads 1,2,5,10,20,50,100,200,300,400`
+    ./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 \
+		--n_servers 3,7 --reads_per 0 \
+        --algs chainrep,chain_mixed,uring,distinguished_piggy,multi,epaxos,esolatedpaxos \
+        --zoo_url <zoo_url> --n_threads 1,2,5,10,20,50,100,200,300,400,500
+    ./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 \
+		--n_servers 3 --reads_per 0 --algs ringpiggy  --ring_insts 120 \
+        --n_threads 1,2,5,10,20,50,100,200,300,400
+    ./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 \
+		--n_servers 7 --reads_per 0 --algs ringpiggy  --ring_insts 250 \
+        --n_threads 1,2,5,10,20,50,100,200,300,400
 
 The parameters passed to the script are as follows:
 
@@ -203,17 +213,24 @@ Results for each experiment are saved in the following folder:
 
 The steps to reproduce these experiments are similar to the CPU bottleneck experiments. Simply execute the following scripts:
 
-`./exec_reads_strong.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,7 --reads_per 0,95 --algs chain_mixed --n_threads 1,2,5,10,20,50,100,150,200,300,500`
-
-`./exec_reads_strong.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,7 --reads_per 50,95 --algs esolatedpaxos --n_threads 1,2,5,10,20,50,100,150,200,300,500`
-
-`./exec_reads_strong.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3 --reads_per 0,100 --algs esolatedpaxos --n_threads 1,2,5,10,20,50,100,150,200,300,500`
-
-`./exec_reads_strong.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 7 --reads_per 0,100 --algs esolatedpaxos --n_threads 1,2,5,10,20,50,100,150,200,300,500`
-
-`./exec_reads_strong_extra.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3 --reads_per 50,95 --algs chain_delayed --n_threads 1,2,5,10,20,50,100,150,200,300,500,600,750,1000,1500,2000`
-
-`./exec_reads_strong_extra.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 7 --reads_per 50,95 --algs chain_delayed --n_threads 1,2,5,10,20,50,100,150,200,300,500,600,750,1000,1500,2000,3000,4000,5000`
+    ./exec_reads_strong.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 \
+		--n_servers 3,7 --reads_per 0,95 --algs chain_mixed \
+		--n_threads 1,2,5,10,20,50,100,150,200,300,500
+    ./exec_reads_strong.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 \
+		--n_servers 3,7 --reads_per 50,95 --algs esolatedpaxos \
+		--n_threads 1,2,5,10,20,50,100,150,200,300,500
+    ./exec_reads_strong.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 \
+		--n_servers 3 --reads_per 0,100 --algs esolatedpaxos \
+		--n_threads 1,2,5,10,20,50,100,150,200,300,500
+    ./exec_reads_strong.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 \
+		--n_servers 7 --reads_per 0,100 --algs esolatedpaxos \
+		--n_threads 1,2,5,10,20,50,100,150,200,300,500
+    ./exec_reads_strong_extra.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 \
+		--n_servers 3 --reads_per 50,95 --algs chain_delayed \
+		--n_threads 1,2,5,10,20,50,100,150,200,300,500,600,750,1000,1500,2000
+    ./exec_reads_strong_extra.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 \
+       --n_servers 7 --reads_per 50,95 --algs chain_delayed \
+       --n_threads 1,2,5,10,20,50,100,150,200,300,500,600,750,1000,1500,2000,3000,4000,5000
 
 The behaviour and parameters of these scripts is similar to the cpu benchmark, with results being saved to:
 
@@ -226,21 +243,30 @@ to decrease the latency of read operations under low load.
 
 #### Latency under low load (Fig. 7)
 
+For this experiment to have accurate results, it is important that C-States are disabled on the machines.
 Again, just like the previous ones, run the following commands (making sure ZooKeeper is running for Chain Replication):
 
-`./exec_lat_split.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,5,7 --reads_per 0 --algs epaxos,esolatedpaxos --n_threads 14`
-
-`./exec_lat_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,5,7 --reads_per 0 --algs distinguished,multi --n_threads 14`
-
-`./exec_lat_tail.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,5,7 --reads_per 0 --zoo_url <zoo_url> --algs uring,chainrep --n_threads 14`
-
-`./exec_lat_middle.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,5,7 --reads_per 0 --algs chain_mixed --n_threads 14`
-
-`./exec_lat_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3 --ring_insts 120 --reads_per 0 --algs ring --n_threads 14`
-
-`./exec_lat_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 5 --ring_insts 200 --reads_per 0 --algs ring --n_threads 14`
-
-`./exec_lat_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 7 --ring_insts 250 --reads_per 0 --algs ring --n_threads 14`
+    ./exec_lat_split.sh  --exp_name test --n_clients 3 --n_runs 3 \
+		--payloads 128 --n_servers 3,5,7 --reads_per 0 \
+		--algs epaxos,esolatedpaxos --n_threads 14
+    ./exec_lat_leader.sh  --exp_name test --n_clients 3 --n_runs 3 \
+		--payloads 128 --n_servers 3,5,7 --reads_per 0 \
+		--algs distinguished,multi --n_threads 14
+    ./exec_lat_tail.sh  --exp_name test --n_clients 3 --n_runs 3 \
+		--payloads 128 --n_servers 3,5,7 --reads_per 0 --zoo_url <zoo_url> \
+		--algs uring,chainrep --n_threads 14
+    ./exec_lat_middle.sh  --exp_name test --n_clients 3 --n_runs 3 \
+		--payloads 128 --n_servers 3,5,7 --reads_per 0 \
+		--algs chain_mixed --n_threads 14
+    ./exec_lat_leader.sh  --exp_name test --n_clients 3 --n_runs 3 \
+		--payloads 128 --n_servers 3 --ring_insts 120 --reads_per 0 \
+		--algs ring --n_threads 14
+    ./exec_lat_leader.sh  --exp_name test --n_clients 3 --n_runs 3 \
+		--payloads 128 --n_servers 5 --ring_insts 200 --reads_per 0 \
+		--algs ring --n_threads 14
+    ./exec_lat_leader.sh  --exp_name test --n_clients 3 --n_runs 3 \
+		--payloads 128 --n_servers 7 --ring_insts 250 --reads_per 0 \
+		--algs ring --n_threads 14
 
 With results being saved to:
 
@@ -252,23 +278,27 @@ The difference between these scripts is the replica to which clients connect to,
 
 While the experiments using ZooKeeper are considerably different (using ChainPaxos on ZooKeeper instead of the key-value store application), the scripts are still similar to the previous ones:
 
-`#Strong reads`
-
-`./exec_zk_orig_strong.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,5,7 --reads_per 50,95 --n_threads 1,2,5,10,20,30,50,75,100,150,200,250,300,350`
-
-`./exec_zk_chain_strong.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,5,7 --reads_per 50,95 --n_threads 1,2,5,10,20,30,50,75,100,150,200,250,300,350`
-
-`#Weak reads`
-
-`./exec_zk_chain.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,5,7 --reads_per 50,95 --n_threads 1,2,5,10,20,30,50,75,100,150,200,250,300,350`
-
-`./exec_zk_orig.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,5,7 --reads_per 50,95 --n_threads 1,2,5,10,20,30,50,75,100,150,200,250,300,350`
-
-`#Writes`
-
-`./exec_zk_chain.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,5,7 --reads_per 0 --n_threads 1,2,5,10,20,30,50,75,100,150,200,250,300,350,500`
-
-`./exec_zk_orig.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,5,7 --reads_per 0 --n_threads 1,2,5,10,20,30,50,75,100,150,200,250,300,350,500`
+    #Strong reads
+    ./exec_zk_orig_strong.sh  --exp_name test --n_clients 3 --n_runs 3 \
+        --payloads 128 --n_servers 3,5,7 --reads_per 50,95 \
+        --n_threads 1,2,5,10,20,30,50,75,100,150,200,250,300,350
+    ./exec_zk_chain_strong.sh  --exp_name test --n_clients 3 --n_runs 3 \
+        --payloads 128 --n_servers 3,5,7 --reads_per 50,95 \
+        --n_threads 1,2,5,10,20,30,50,75,100,150,200,250,300,350
+    #Weak reads
+    ./exec_zk_chain.sh  --exp_name test --n_clients 3 --n_runs 3 \
+        --payloads 128 --n_servers 3,5,7 --reads_per 50,95 \
+        --n_threads 1,2,5,10,20,30,50,75,100,150,200,250,300,350
+    ./exec_zk_orig.sh  --exp_name test --n_clients 3 --n_runs 3 \
+        --payloads 128 --n_servers 3,5,7 --reads_per 50,95 \
+        --n_threads 1,2,5,10,20,30,50,75,100,150,200,250,300,350
+    #Writes
+    ./exec_zk_chain.sh  --exp_name test --n_clients 3 --n_runs 3 \
+        --payloads 128 --n_servers 3,5,7 --reads_per 0 \
+        --n_threads 1,2,5,10,20,30,50,75,100,150,200,250,300,350,500
+    ./exec_zk_orig.sh  --exp_name test --n_clients 3 --n_runs 3 \
+        --payloads 128 --n_servers 3,5,7 --reads_per 0 \
+        --n_threads 1,2,5,10,20,30,50,75,100,150,200,250,300,350,500
 
 These scripts create ZooKeeper configuration files for the experiment, launch ZooKeeper replicas, load data into them, and then execute client operations just like in the previous ones (with the difference that operations are znode operations instead of key-value store operations).
 
@@ -292,13 +322,19 @@ allow the user to execute sudo without password.
 
 Finally, make sure ZooKeeper is running and execute the following scripts:
 
-`./exec_net_threads_split.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 2048 --n_servers 3,7 --reads_per 0 --algs epaxos,esolatedpaxos --n_threads 1,2,5,10,20,30,50,75,100,200,300,400,500`
-    
-`./exec_net_threads_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 2048 --n_servers 3,7 --reads_per 0 --zoo_url <zoo_url> --algs chain_mixed,uring,distinguished_piggy,multi,chainrep --n_threads 1,2,5,10,20,30,50,75,100,200,300,400,500`
-
-`./exec_net_threads_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --algs ringpiggy --ring_insts 15 --n_threads 1,2,5,10,20,30,50,75,100,200`
-
-`./exec_net_threads_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 2048 --n_servers 7 --reads_per 0 --algs ringpiggy --ring_insts 20 --n_threads 1,2,5,10,20,30,50,75,100,200`
+    ./exec_net_threads_split.sh  --exp_name test --n_clients 3 --n_runs 3 \
+        --payloads 2048 --n_servers 3,7 --reads_per 0 --algs epaxos,esolatedpaxos \
+        --n_threads 1,2,5,10,20,30,50,75,100,200,300,400,500
+    ./exec_net_threads_leader.sh  --exp_name test --n_clients 3 --n_runs 3 \
+        --payloads 2048 --n_servers 3,7 --reads_per 0 --zoo_url <zoo_url> \
+        --algs chain_mixed,uring,distinguished_piggy,multi,chainrep \
+        --n_threads 1,2,5,10,20,30,50,75,100,200,300,400,500
+    ./exec_net_threads_leader.sh  --exp_name test --n_clients 3 --n_runs 3 \
+        --payloads 2048 --n_servers 3 --reads_per 0 --algs ringpiggy --ring_insts 15 \
+        --n_threads 1,2,5,10,20,30,50,75,100,200
+    ./exec_net_threads_leader.sh  --exp_name test --n_clients 3 --n_runs 3 \
+        --payloads 2048 --n_servers 7 --reads_per 0 --algs ringpiggy --ring_insts 20 \
+        --n_threads 1,2,5,10,20,30,50,75,100,200
 
 #### Geo-replication experiments (Figure 9):
 
