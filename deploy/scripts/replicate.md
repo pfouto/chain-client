@@ -313,17 +313,24 @@ These latencies are defined in the `tc_latencies` file, as a matrix.
 Then we run the scripts that will execute the experiments. As the latency of operations will be higher, we require more clients to saturate the protocols,
 so for this experiment we use 10 client machines:
 
-`./exec_geo_leader.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --algs multi,distinguished_piggy --n_threads 100,200,500,1000,1500,2000`
-
-`./exec_geo_leader.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 5 --reads_per 0 --algs multi,distinguished_piggy --n_threads 100,200,500,1000,1500,2000`
-
-`./exec_geo_split.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --algs epaxos,esolatedpaxos --n_threads 100,200,500,1000,1500,2000,2500,3000`
-
-`./exec_geo_split.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 5 --reads_per 0 --algs epaxos,esolatedpaxos --n_threads 100,200,500,1000,1500,2000,2500,3000`
-
-`./exec_geo_last.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --zoo_url <zoo_url> --algs chainrep,chain_mixed,uring --n_threads 100,200,500,1000,1500,2000,2500,3000,4000`
-
-`./exec_geo_last.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 5 --reads_per 0 --zoo_url gros-38 --algs chainrep,chain_mixed,uring --n_threads 100,200,500,1000,1500,2000,2500,3000,4000,5000`
+    ./exec_geo_leader.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 \
+        --n_servers 3 --reads_per 0 --algs multi,distinguished_piggy \
+        --n_threads 100,200,500,1000,1500,2000
+    ./exec_geo_leader.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 \
+        --n_servers 5 --reads_per 0 --algs multi,distinguished_piggy \
+        --n_threads 100,200,500,1000,1500,2000
+    ./exec_geo_split.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 \
+        --n_servers 3 --reads_per 0 --algs epaxos,esolatedpaxos \
+        --n_threads 100,200,500,1000,1500,2000,2500,3000
+    ./exec_geo_split.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 \
+        --n_servers 5 --reads_per 0 --algs epaxos,esolatedpaxos \
+        --n_threads 100,200,500,1000,1500,2000,2500,3000
+    ./exec_geo_last.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 \
+        --n_servers 3 --reads_per 0 --zoo_url <zoo_url> --algs chainrep,chain_mixed,uring \
+        --n_threads 100,200,500,1000,1500,2000,2500,3000,4000
+    ./exec_geo_last.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 \
+        --n_servers 5 --reads_per 0 --zoo_url gros-38 --algs chainrep,chain_mixed,uring \
+        --n_threads 100,200,500,1000,1500,2000,2500,3000,4000,5000
 
 ### Gathering results and understanding the logs
 

@@ -122,13 +122,6 @@ IFS=', ' read -r -a threads_list <<<"$n_threads_arg"
 
 total_runs=$((n_runs * ${#payloads_list[@]} * ${#n_servers_list[@]} * ${#algs_list[@]} * ${#reads_list[@]} * ${#threads_list[@]}))
 
-echo "Disabling C-States"
-mapfile -t workers < <(./nodes.sh)
-for worker in "${workers[@]}"; do
-  oarsh "$worker" "sudo-g5k apt-get install linux-cpupower && sudo-g5k cpupower idle-set -d 3" &
-done
-wait
-
 # ----------------------------------- LOG PARAMS ------------------------------
 echo -e "$BLUE\n ---- CONFIG ----  $NC"
 echo -e "$GREEN exp_name: $NC \t\t\t${exp_name}"
@@ -187,18 +180,32 @@ for run in $(# ------------------------------------------- RUN
         for alg in "${algs_list[@]}"; do # ----------------------------------- ALG
           echo -e "$GREEN -- -- -- -- -- -- STARTING ALG $NC$alg"
 
-          exp_path_client="../logs/geo/${exp_name}/client/${n_servers}/${reads_per}/${payload}/${alg}/${run}"
-          exp_path_server="../logs/geo/${exp_name}/server/${n_servers}/${reads_per}/${payload}/${alg}/${run}"
+          exp_path_client="$HOME/chainpaxos/logs/geo/${exp_name}/client/${n_servers}/${reads_per}/${payload}/${alg}/${run}"
+          exp_path_server="$HOME/chainpaxos/logs/geo/${exp_name}/server/${n_servers}/${reads_per}/${payload}/${alg}/${run}"
 
-          mkdir -p "${exp_path_client}"
-          mkdir -p "${exp_path_server}"
+          for server_node in "${server_nodes[@]}"; do
+              ssh "$server_node" "mkdir -p ${exp_path_server}"
+          done
+
+          for node in "${client_nodes[@]}"; do
+              ssh "$node" "mkdir -p ${exp_path_client}"
+          done
 
           for n_threads in "${threads_list[@]}"; do # -------------------- N_THREADS
             echo -e "$GREEN -- -- -- -- -- -- -- -- STARTING THREADS $NC$n_threads"
             echo -e "$GREEN -- -- -- -- -- -- -- -- - $NC$exp_path_client/$n_threads"
 
-            rm -r "${exp_path_client}"/"${n_threads}"_*
-            rm -r "${exp_path_server}"/"${n_threads}"_*
+          for n_threads in "${threads_list[@]}"; do # -------------------- N_THREADS
+            echo -e "$GREEN -- -- -- -- -- -- -- -- STARTING THREADS $NC$n_threads"
+            echo -e "$GREEN -- -- -- -- -- -- -- -- - $NC$exp_path_client/$n_threads"
+
+            for server_node in "${server_nodes[@]}"; do
+                ssh "$server_node" "rm -r ${exp_path_server}/${n_threads}_*"
+            done
+
+            for node in "${client_nodes[@]}"; do
+                ssh "$node" "rm -r ${exp_path_client}/${n_threads}_*"
+            done
 
             ((current_run = current_run + 1))
             echo -e "$GREEN RUN ${current_run}/${total_runs} - ($(((current_run - 1) * 100 / total_runs))%) ($start_date) $NC"
