@@ -193,10 +193,6 @@ for run in $(# ------------------------------------------- RUN
             echo -e "$GREEN -- -- -- -- -- -- -- -- STARTING THREADS $NC$n_threads"
             echo -e "$GREEN -- -- -- -- -- -- -- -- - $NC$exp_path_client/$n_threads"
 
-          for n_threads in "${threads_list[@]}"; do # -------------------- N_THREADS
-            echo -e "$GREEN -- -- -- -- -- -- -- -- STARTING THREADS $NC$n_threads"
-            echo -e "$GREEN -- -- -- -- -- -- -- -- - $NC$exp_path_client/$n_threads"
-
             for server_node in "${server_nodes[@]}"; do
                 ssh "$server_node" "rm -r ${exp_path_server}/${n_threads}_*"
             done

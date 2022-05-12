@@ -132,13 +132,13 @@ the scripts `killall.sh` will connect to each worker machine and kill all runnin
 
 #### CPU bottleneck (Fig. 4)
 
-To reproduce the results in Figure 4, first we launch a Zookeeper instance, required for Chain Replication:
+To reproduce the results in Figure 4, first we launch a Zookeeper instance, required for Chain Replication, from the `chainpaxos` folder:
     
     zkOriginal/bin/zkServer.sh start zoo_sample.cfg
 
 This can be launched either on the coordinator, or any of the worker replicas (preferably on the ones that will run the clients)
 
-Then we executed the following scripts, sequentially:
+Then we executed the following scripts (that we got from the `deploy/scripts/manual` folder), sequentially:
 
 `./exec_cpu_threads.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 --n_servers 3,7 --reads_per 0 --algs chainrep,chain_mixed,uring,distinguished_piggy,multi,epaxos,esolatedpaxos --zoo_url <zoo_url> --n_threads 1,2,5,10,20,50,100,200,300,400,500`
 
@@ -329,7 +329,7 @@ so for this experiment we use 10 client machines:
         --n_servers 3 --reads_per 0 --zoo_url <zoo_url> --algs chainrep,chain_mixed,uring \
         --n_threads 100,200,500,1000,1500,2000,2500,3000,4000
     ./exec_geo_last.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 \
-        --n_servers 5 --reads_per 0 --zoo_url gros-38 --algs chainrep,chain_mixed,uring \
+        --n_servers 5 --reads_per 0 --zoo_url <zoo_url> --algs chainrep,chain_mixed,uring \
         --n_threads 100,200,500,1000,1500,2000,2500,3000,4000,5000
 
 ### Gathering results and understanding the logs
