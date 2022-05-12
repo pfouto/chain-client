@@ -44,23 +44,21 @@ print_and_exec() {
 download=1000
 upload=1000
 
-exit
-
 for node in "${nodes[@]}"; do
   echo -e "${RED} ${node}----------------------------------------------------------------------${NC}"
 
   echo -e "${BLUE}DOWNLOAD $download$NC"
-  print_and_exec "${node}" "sudo-g5k modprobe ifb numifbs=1"
-  print_and_exec "${node}" "sudo-g5k ip link add ifb0 type ifb"
-  print_and_exec "${node}" "sudo-g5k ip link set dev ifb0 up"
-  print_and_exec "${node}" "sudo-g5k tc qdisc add dev br0 handle ffff: ingress"
-  print_and_exec "${node}" "sudo-g5k tc filter add dev br0 parent ffff: protocol ip u32 match u32 0 0 action mirred egress redirect dev ifb0"
-  print_and_exec "${node}" "sudo-g5k tc qdisc del dev ifb0 root"
-  print_and_exec "${node}" "sudo-g5k tc qdisc add dev ifb0 root handle 1: htb default 1"
-  print_and_exec "${node}" "sudo-g5k tc class add dev ifb0 parent 1: classid 1:1 htb rate ${download}mbit"
+  print_and_exec "${node}" "sudo modprobe ifb numifbs=1"
+  print_and_exec "${node}" "sudo ip link add ifb0 type ifb"
+  print_and_exec "${node}" "sudo ip link set dev ifb0 up"
+  print_and_exec "${node}" "sudo tc qdisc add dev br0 handle ffff: ingress"
+  print_and_exec "${node}" "sudo tc filter add dev br0 parent ffff: protocol ip u32 match u32 0 0 action mirred egress redirect dev ifb0"
+  print_and_exec "${node}" "sudo tc qdisc del dev ifb0 root"
+  print_and_exec "${node}" "sudo tc qdisc add dev ifb0 root handle 1: htb default 1"
+  print_and_exec "${node}" "sudo tc class add dev ifb0 parent 1: classid 1:1 htb rate ${download}mbit"
 
   echo -e "${BLUE}UPLOAD $upload$NC"
-  print_and_exec "${node}" "sudo-g5k tc qdisc del dev br0 root; sudo-g5k tc qdisc add dev br0 root handle 1: htb default 1"
-  cmd="sudo-g5k tc class add dev br0 parent 1: classid 1:1 htb rate ${upload}mbit"
+  print_and_exec "${node}" "sudo tc qdisc del dev br0 root; sudo tc qdisc add dev br0 root handle 1: htb default 1"
+  cmd="sudo tc class add dev br0 parent 1: classid 1:1 htb rate ${upload}mbit"
   print_and_exec "${node}" "$cmd"
 done

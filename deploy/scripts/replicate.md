@@ -116,6 +116,10 @@ we had to limit the number of maximum concurrent consensus instances. Again, thi
 As such, during experiments that include Chain Replication, we run a (non-replicated) instance of ZooKeeper in one of the nodes (in our experiments we ran it on the coordinator).
 All other protocols were implemented with static memberships (except ChainPaxos, of course), and thus do not require ZooKeeper. 
 Note that this usage of ZooKeeper is completely unrelated to the experiments done in the ZooKeeper case-study in section 5.4 (figure 8).
+* **Machine selection**: All scripts attempt to execute the experiments launching the consensus replicas (servers) and clients in the machines
+declared in the `hosts` file. Consensus replicas are picked from top to bottom while client files are picked from the bottom to the top.
+For instance, if you have 10 machines in the file, and execute an experiment with 5 servers and 3 clients, the first 5 machines
+in the file will be the servers, while the last 3 will be the clients, with the remaining 2 machines being unused.
 
 #### CPU bottleneck (Fig. 4)
 
@@ -235,10 +239,22 @@ These scripts create ZooKeeper configuration files for the experiment, load data
 
 
 
-#### Net bottle:
+#### Network bottleneck (Figure 5):
+
+While the scripts to execute the experiments of Figure 5 are still similar to the previous ones, these experiments require previous setup of [Linux Traffic Control](https://man7.org/linux/man-pages/man8/tc.8.html) (tc)
+rules to limit the bandwidth available in each machine, which requires the user to have root access.
+For Debian, this requires installing the package `iproute2`
+
+    apt-get install iproute2
+
+Run the following script:
+
+    ./setuptc_local_1gb.sh 7
+
+Which will connect to the first 7 machines in the `hosts` file (the ones that will serve as replicas in the following experiments)
+and limit their bandwidth to 1gb.
 
     ../zkOriginal/bin/zkServer.sh start zoo_sample.cfg //For chainrep
-    ./setuptc_local_1gb.sh 7
 
     ./exec_net_threads_split.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 2048 --n_servers 3,7 --reads_per 0 --algs epaxos,esolatedpaxos --n_threads 1,2,5,10,20,30,50,75,100,200,300,400,500
     ./exec_net_threads_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 2048 --n_servers 3,7 --reads_per 0 --zoo_url gros-xxx --algs chain_mixed,uring,distinguished_piggy,multi,chainrep --n_threads 1,2,5,10,20,30,50,75,100,200,300,400,500
@@ -252,14 +268,17 @@ These scripts create ZooKeeper configuration files for the experiment, load data
     ./exec_net_threads_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 2048 --n_servers 7 --reads_per 0 --algs ringpiggy --ring_insts 20 --n_threads 30,75
 
 #### GEO:
-../zkOriginal/bin/zkServer.sh start zoo_sample.cfg //For chainrep
-./setuptc_remote_1gb.sh 5 tc_latencies
-./exec_geo_leader.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --algs multi,distinguished_piggy --n_threads 100,200,500,1000,1500,2000
-./exec_geo_leader.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 5 --reads_per 0 --algs multi,distinguished_piggy --n_threads 100,200,500,1000,1500,2000
-./exec_geo_split.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --algs epaxos,esolatedpaxos --n_threads 100,200,500,1000,1500,2000,2500,3000
-./exec_geo_split.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 5 --reads_per 0 --algs epaxos,esolatedpaxos --n_threads 100,200,500,1000,1500,2000,2500,3000
-./exec_geo_last.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --zoo_url gros-52 --algs chainrep,chain_mixed,uring --n_threads 100,200,500,1000,1500,2000,2500,3000,4000
-./exec_geo_last.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 5 --reads_per 0 --zoo_url gros-38 --algs chainrep,chain_mixed,uring --n_threads 100,200,500,1000,1500,2000,2500,3000,4000,5000
-#Alternative ChainPaxos
-./exec_geo_middle.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --algs chain_mixed_3 --n_threads 100,200,500,1000,1500,2000 && \
-./exec_geo_middle.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 5 --reads_per 0 --algs chain_mixed_3 --n_threads 100,200,500,1000,1500,2000,2500,3000
+
+Explain different TC
+
+    ../zkOriginal/bin/zkServer.sh start zoo_sample.cfg //For chainrep
+    ./setuptc_remote_1gb.sh 5 tc_latencies
+    ./exec_geo_leader.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --algs multi,distinguished_piggy --n_threads 100,200,500,1000,1500,2000
+    ./exec_geo_leader.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 5 --reads_per 0 --algs multi,distinguished_piggy --n_threads 100,200,500,1000,1500,2000
+    ./exec_geo_split.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --algs epaxos,esolatedpaxos --n_threads 100,200,500,1000,1500,2000,2500,3000
+    ./exec_geo_split.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 5 --reads_per 0 --algs epaxos,esolatedpaxos --n_threads 100,200,500,1000,1500,2000,2500,3000
+    ./exec_geo_last.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --zoo_url gros-52 --algs chainrep,chain_mixed,uring --n_threads 100,200,500,1000,1500,2000,2500,3000,4000
+    ./exec_geo_last.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 5 --reads_per 0 --zoo_url gros-38 --algs chainrep,chain_mixed,uring --n_threads 100,200,500,1000,1500,2000,2500,3000,4000,5000
+    #Alternative ChainPaxos
+    ./exec_geo_middle.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --algs chain_mixed_3 --n_threads 100,200,500,1000,1500,2000 && \
+    ./exec_geo_middle.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 5 --reads_per 0 --algs chain_mixed_3 --n_threads 100,200,500,1000,1500,2000,2500,3000
