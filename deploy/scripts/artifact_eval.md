@@ -195,6 +195,7 @@ And then executes an experiment *for every combination of parameters*, in this c
 The evaluator will probably want to use a lower number of `n_runs`.
 
 The experiment consists in:
+
 * Launching <n_servers> replicas of the given protocol.
 * Launching <n_client> clients with <n_threads> client threads each. Clients execute operations in closed loop for 85 seconds
 * Waiting for the clients to terminate
@@ -373,7 +374,7 @@ so for this experiment we use 10 client machines:
 After running the experiments, every worker machine will have all logs in the folder `/home/<your user>/chainpaxos/logs`.
 To gather them, simply copy that folder to a single machine (with rsync for instance) and all logs should merge without any conflicts.
 
-The repository in `https://github.com/pfouto/chain-results/` contains the results raw results used in the article, that can be used
+The repository in `https://github.com/pfouto/chain-results/` contains the raw results used in the article, that can be used
 to compare with the obtained results.
 The repository also contains the scripts that parse them to generate graphs.
 
