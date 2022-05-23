@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 echo "Disabling C-States"
 mapfile -t workers < <(./nodes.sh)
 for worker in "${workers[@]}"; do

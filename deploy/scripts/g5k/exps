@@ -58,12 +58,6 @@ Net bottle:
     ./exec_net_threads_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --algs ringpiggy --ring_insts 15 --n_threads 1,2,5,10,20,30,50,75,100,200 && \
     ./exec_net_threads_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 2048 --n_servers 7 --reads_per 0 --algs ringpiggy --ring_insts 20 --n_threads 1,2,5,10,20,30,50,75,100,200
 
-    #Execing
-    ./exec_net_threads_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 2048 --n_servers 3,7 --reads_per 0 --zoo_url gros-11 --algs chain_mixed,uring,distinguished_piggy,multi,chainrep --n_threads 30,75
-    ./exec_net_threads_split.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 2048 --n_servers 3,7 --reads_per 0 --algs epaxos,esolatedpaxos --n_threads 30,75 && \
-    ./exec_net_threads_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --algs ringpiggy --ring_insts 15 --n_threads 30,75 && \
-    ./exec_net_threads_leader.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 2048 --n_servers 7 --reads_per 0 --algs ringpiggy --ring_insts 20 --n_threads 30,75
-
 GEO:
     ../zkOriginal/bin/zkServer.sh start zoo_sample.cfg //For chainrep
     ./setuptc_remote_1gb.sh 5 tc_latencies
@@ -73,6 +67,3 @@ GEO:
     ./exec_geo_split.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 5 --reads_per 0 --algs epaxos,esolatedpaxos --n_threads 100,200,500,1000,1500,2000,2500,3000
     ./exec_geo_last.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --zoo_url gros-52 --algs chainrep,chain_mixed,uring --n_threads 100,200,500,1000,1500,2000,2500,3000,4000
     ./exec_geo_last.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 5 --reads_per 0 --zoo_url gros-38 --algs chainrep,chain_mixed,uring --n_threads 100,200,500,1000,1500,2000,2500,3000,4000,5000
-    #Alternative ChainPaxos
-    ./exec_geo_middle.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 3 --reads_per 0 --algs chain_mixed_3 --n_threads 100,200,500,1000,1500,2000 && \
-    ./exec_geo_middle.sh  --exp_name test --n_clients 10 --n_runs 3 --payloads 2048 --n_servers 5 --reads_per 0 --algs chain_mixed_3 --n_threads 100,200,500,1000,1500,2000,2500,3000
