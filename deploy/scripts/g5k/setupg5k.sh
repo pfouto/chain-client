@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 set -e
 
 echo "----- Creating directory ~/chainpaxos and sub-dirs"
@@ -31,6 +33,8 @@ cd ~/chainpaxos/repos
 wget https://archive.apache.org/dist/zookeeper/zookeeper-3.7.0/apache-zookeeper-3.7.0-bin.tar.gz
 tar -xf apache-zookeeper-3.7.0-bin.tar.gz -C ~/chainpaxos/
 mv ~/chainpaxos/apache-zookeeper-3.7.0-bin ~/chainpaxos/zkOriginal
+cd ~/chainpaxos/zkOriginal/conf
+sed -i -e '/tickTime=/ s/=.*/=500/' zoo_sample.cfg
 
 echo "------ Extracting Chain-ZooKeeper to ~/chainpaxos/apache-zookeeper-3.7.0-bin"
 tar -xf ~/chainpaxos/repos/chain-zoo/zookeeper-assembly/target/apache-zookeeper-3.7.0-bin.tar.gz -C ~/chainpaxos/
