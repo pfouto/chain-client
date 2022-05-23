@@ -43,9 +43,11 @@ There are 4 artifacts to set up:
 
 A script is provided to set this up. To execute it, issue the following commands in any folder in the coordinator machine:
 
-    wget https://raw.githubusercontent.com/pfouto/chain-client/master/deploy/scripts/g5k/setupg5k.sh
-    chmod +x setupg5k.sh
-    ./setupg5k.sh
+`wget https://raw.githubusercontent.com/pfouto/chain-client/master/deploy/scripts/g5k/setupg5k.sh`
+
+`chmod +x setupg5k.sh`
+
+`./setupg5k.sh`
 
 The script will create a folder `chainpaxos` in your home folder, download all the artifacts and setup the file structure
 required for the experiment scripts to work correctly.
