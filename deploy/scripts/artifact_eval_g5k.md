@@ -203,16 +203,10 @@ Results for each experiment are saved in the following folder:
 The steps to reproduce these experiments are similar to the CPU bottleneck experiments. Simply execute the following scripts:
 
     ./exec_reads_strong.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 \
-		--n_servers 3,7 --reads_per 0,95 --algs chain_mixed \
+		--n_servers 3,7 --reads_per 0 --algs chain_mixed \
 		--n_threads 1,2,5,10,20,50,100,150,200,300,500
     ./exec_reads_strong.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 \
-		--n_servers 3,7 --reads_per 50,95 --algs esolatedpaxos \
-		--n_threads 1,2,5,10,20,50,100,150,200,300,500
-    ./exec_reads_strong.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 \
-		--n_servers 3 --reads_per 0,100 --algs esolatedpaxos \
-		--n_threads 1,2,5,10,20,50,100,150,200,300,500
-    ./exec_reads_strong.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 \
-		--n_servers 7 --reads_per 0,100 --algs esolatedpaxos \
+		--n_servers 3,7 --reads_per 100 --algs esolatedpaxos \
 		--n_threads 1,2,5,10,20,50,100,150,200,300,500
     ./exec_reads_strong_extra.sh  --exp_name test --n_clients 3 --n_runs 3 --payloads 128 \
 		--n_servers 3 --reads_per 50,95 --algs chain_delayed \
